@@ -525,36 +525,35 @@ export class PlanService {
       const closeParenthesisRegex = "\\)"
       // tslint:disable-next-line:max-line-length
       const actualRegex =
-        "(?:actual\\stime=(\\d+\\.\\d+)\\.\\.(\\d+\\.\\d+)\\srows=(\\d+)\\sloops=(\\d+)|actual\\srows=(\\d+)\\sloops=(\\d+)|(never\\s+executed))"
+        "(?:actual(?:\\stime=(\\d+\\.\\d+)\\.\\.(\\d+\\.\\d+))?\\srows=(\\d+)\\sloops=(\\d+)|(never\\s+executed))"
       const optionalGroup = "?"
 
       const emptyLineMatches = new RegExp(emptyLineRegex).exec(line)
       const headerMatches = new RegExp(headerRegex).exec(line)
 
-      /*
-       * Groups
-       * 1: prefix
-       * 2: type
-       * 3: estimated_startup_cost
-       * 4: estimated_total_cost
-       * 5: estimated_rows
-       * 6: estimated_row_width
-       * 7: actual_time_first
-       * 8: actual_time_last
-       * 9: actual_rows
-       * 10: actual_loops
-       * 11: actual_rows_
-       * 12: actual_loops_
-       * 13: never_executed
-       * 14: estimated_startup_cost
-       * 15: estimated_total_cost
-       * 16: estimated_rows
-       * 17: estimated_row_width
-       * 18: actual_time_first
-       * 19: actual_time_last
-       * 20: actual_rows
-       * 21: actual_loops
-       */
+      /* Groups */
+      enum MatchSlotsNode {
+        Prefix = 1,
+        Type,
+        EstimatedStartupCost1,
+        EstimatedTotalCost1,
+        EstimatedRows,
+        EstimatedRowWidth,
+        ActualTimeFirst1,
+        ActualTimeLast1,
+        ActualRows1,
+        ActualLoops1,
+        NeverExecuted,
+        EstimatedStartupCost2,
+        EstimatedTotalCost2,
+        EstimatedRows2,
+        EstimatedRowWidth2,
+        ActualTimeFirst2,
+        ActualTimeLast2,
+        ActualRows2,
+        ActualLoops2,
+      }
+
       const nodeRegex = new RegExp(
         prefixRegex +
           typeRegex +
@@ -601,18 +600,17 @@ export class PlanService {
         /^(\s*)Trigger\s+(.*):\s+time=(\d+\.\d+)\s+calls=(\d+)\s*$/g
       const triggerMatches = triggerRegex.exec(line)
 
-      /*
-       * Groups
-       * 2: Worker number
-       * 3: actual_time_first
-       * 4: actual_time_last
-       * 5: actual_rows
-       * 6: actual_loops
-       * 7: actual_rows_
-       * 8: actual_loops_
-       * 9: never_executed
-       * 10: extra
-       */
+      /* Groups */
+      enum MatchSlotsWorker {
+        WorkerNumber = 2,
+        ActualTimeFirst,
+        ActualTimeLast,
+        ActualRows1,
+        ActualLoops1,
+        NeverExecuted,
+        Extra,
+      }
+
       const workerRegex = new RegExp(
         /^(\s*)Worker\s+(\d+):\s+/.source +
           nonCapturingGroupOpen +
@@ -634,51 +632,64 @@ export class PlanService {
       if (emptyLineMatches || headerMatches) {
         return
       } else if (nodeMatches && !cteMatches && !subMatches) {
-        //const prefix = nodeMatches[1]
-        const neverExecuted = nodeMatches[13]
-        const newNode: Node = new Node(nodeMatches[2])
+        //const prefix = nodeMatches[MatchSlotsNode.Prefix]
+        const neverExecuted = nodeMatches[MatchSlotsNode.NeverExecuted]
+        const newNode: Node = new Node(nodeMatches[MatchSlotsNode.Type])
         if (
-          (nodeMatches[3] && nodeMatches[4]) ||
-          (nodeMatches[14] && nodeMatches[15])
+          (nodeMatches[MatchSlotsNode.EstimatedStartupCost1] &&
+            nodeMatches[MatchSlotsNode.EstimatedTotalCost1]) ||
+          (nodeMatches[MatchSlotsNode.EstimatedStartupCost2] &&
+            nodeMatches[MatchSlotsNode.EstimatedTotalCost2])
         ) {
           newNode[NodeProp.STARTUP_COST] = parseFloat(
-            nodeMatches[3] || nodeMatches[14]
+            nodeMatches[MatchSlotsNode.EstimatedStartupCost1] ||
+              nodeMatches[MatchSlotsNode.EstimatedStartupCost2]
           )
           newNode[NodeProp.TOTAL_COST] = parseFloat(
-            nodeMatches[4] || nodeMatches[15]
+            nodeMatches[MatchSlotsNode.EstimatedTotalCost1] ||
+              nodeMatches[MatchSlotsNode.EstimatedTotalCost2]
           )
           newNode[NodeProp.PLAN_ROWS] = parseInt(
-            nodeMatches[5] || nodeMatches[16],
+            nodeMatches[MatchSlotsNode.EstimatedRows] ||
+              nodeMatches[MatchSlotsNode.EstimatedRows2],
             0
           )
           newNode[NodeProp.PLAN_WIDTH] = parseInt(
-            nodeMatches[6] || nodeMatches[17],
+            nodeMatches[MatchSlotsNode.EstimatedRowWidth] ||
+              nodeMatches[MatchSlotsNode.EstimatedRowWidth2],
             0
           )
         }
         if (
-          (nodeMatches[7] && nodeMatches[8]) ||
-          (nodeMatches[18] && nodeMatches[19])
+          (nodeMatches[MatchSlotsNode.ActualTimeFirst1] &&
+            nodeMatches[MatchSlotsNode.ActualTimeLast1]) ||
+          (nodeMatches[MatchSlotsNode.ActualTimeFirst2] &&
+            nodeMatches[MatchSlotsNode.ActualTimeLast2])
         ) {
           newNode[NodeProp.ACTUAL_STARTUP_TIME] = parseFloat(
-            nodeMatches[7] || nodeMatches[18]
+            nodeMatches[MatchSlotsNode.ActualTimeFirst1] ||
+              nodeMatches[MatchSlotsNode.ActualTimeFirst2]
           )
           newNode[NodeProp.ACTUAL_TOTAL_TIME] = parseFloat(
-            nodeMatches[8] || nodeMatches[19]
+            nodeMatches[MatchSlotsNode.ActualTimeLast1] ||
+              nodeMatches[MatchSlotsNode.ActualTimeLast2]
           )
         }
 
         if (
-          (nodeMatches[9] && nodeMatches[10]) ||
-          (nodeMatches[11] && nodeMatches[12]) ||
-          (nodeMatches[20] && nodeMatches[21])
+          (nodeMatches[MatchSlotsNode.ActualRows1] &&
+            nodeMatches[MatchSlotsNode.ActualLoops1]) ||
+          (nodeMatches[MatchSlotsNode.ActualRows2] &&
+            nodeMatches[MatchSlotsNode.ActualLoops2])
         ) {
           newNode[NodeProp.ACTUAL_ROWS] = parseInt(
-            nodeMatches[9] || nodeMatches[11] || nodeMatches[20],
+            nodeMatches[MatchSlotsNode.ActualRows1] ||
+              nodeMatches[MatchSlotsNode.ActualRows2],
             0
           )
           newNode[NodeProp.ACTUAL_LOOPS] = parseInt(
-            nodeMatches[10] || nodeMatches[12] || nodeMatches[21],
+            nodeMatches[MatchSlotsNode.ActualLoops1] ||
+              nodeMatches[MatchSlotsNode.ActualLoops2],
             0
           )
         }
@@ -750,8 +761,11 @@ export class PlanService {
         }
         elementsAtDepth.push([depth, element])
       } else if (workerMatches) {
-        //const prefix = workerMatches[1]
-        const workerNumber = parseInt(workerMatches[2], 0)
+        //const prefix = workerMatches[MatchSlotsWorker.1]
+        const workerNumber = parseInt(
+          workerMatches[MatchSlotsWorker.WorkerNumber],
+          0
+        )
         const previousElement = _.last(elementsAtDepth)?.[1] as NodeElement
         if (!previousElement) {
           return
@@ -764,20 +778,35 @@ export class PlanService {
           worker = new Worker(workerNumber)
           previousElement.node[NodeProp.WORKERS]?.push(worker)
         }
-        if (workerMatches[3] && workerMatches[4]) {
-          worker[NodeProp.ACTUAL_STARTUP_TIME] = parseFloat(workerMatches[3])
-          worker[NodeProp.ACTUAL_TOTAL_TIME] = parseFloat(workerMatches[4])
-          worker[NodeProp.ACTUAL_ROWS] = parseInt(workerMatches[5], 0)
-          worker[NodeProp.ACTUAL_LOOPS] = parseInt(workerMatches[6], 0)
+        if (
+          workerMatches[MatchSlotsWorker.ActualTimeFirst] &&
+          workerMatches[MatchSlotsWorker.ActualTimeLast]
+        ) {
+          worker[NodeProp.ACTUAL_STARTUP_TIME] = parseFloat(
+            workerMatches[MatchSlotsWorker.ActualTimeFirst]
+          )
+          worker[NodeProp.ACTUAL_TOTAL_TIME] = parseFloat(
+            workerMatches[MatchSlotsWorker.ActualTimeLast]
+          )
+          worker[NodeProp.ACTUAL_ROWS] = parseInt(
+            workerMatches[MatchSlotsWorker.ActualRows1],
+            0
+          )
+          worker[NodeProp.ACTUAL_LOOPS] = parseInt(
+            workerMatches[MatchSlotsWorker.ActualLoops1],
+            0
+          )
         }
 
-        if (this.parseSort(workerMatches[10], worker)) {
+        if (this.parseSort(workerMatches[MatchSlotsWorker.Extra], worker)) {
           return
         }
 
         // extra info
-        const info = workerMatches[10].split(/: (.+)/).filter((x) => x)
-        if (workerMatches[10]) {
+        const info = workerMatches[MatchSlotsWorker.Extra]
+          .split(/: (.+)/)
+          .filter((x) => x)
+        if (workerMatches[MatchSlotsWorker.Extra]) {
           if (!info[1]) {
             return
           }
