@@ -525,7 +525,7 @@ export class PlanService {
       const closeParenthesisRegex = "\\)"
       // tslint:disable-next-line:max-line-length
       const actualRegex =
-        "(?:actual(?:\\stime=(\\d+\\.\\d+)\\.\\.(\\d+\\.\\d+))?\\srows=(\\d+)\\sloops=(\\d+)|(never\\s+executed))"
+        "(?:actual(?:\\stime=(\\d+\\.\\d+)\\.\\.(\\d+\\.\\d+))?\\srows=(\\d+)(?:\\sbatches=(\\d+)\\srpb=(\\d+))?\\sloops=(\\d+)|(never\\s+executed))"
       const optionalGroup = "?"
 
       const emptyLineMatches = new RegExp(emptyLineRegex).exec(line)
@@ -542,6 +542,8 @@ export class PlanService {
         ActualTimeFirst1,
         ActualTimeLast1,
         ActualRows1,
+        ActualBatches1,
+        ActualRPB1,
         ActualLoops1,
         NeverExecuted,
         EstimatedStartupCost2,
@@ -551,6 +553,8 @@ export class PlanService {
         ActualTimeFirst2,
         ActualTimeLast2,
         ActualRows2,
+        ActualBatches2,
+        ActualRPB2,
         ActualLoops2,
       }
 
@@ -606,6 +610,8 @@ export class PlanService {
         ActualTimeFirst,
         ActualTimeLast,
         ActualRows1,
+        ActualBatches1,
+        ActualRPB1,
         ActualLoops1,
         NeverExecuted,
         Extra,
@@ -685,6 +691,16 @@ export class PlanService {
           newNode[NodeProp.ACTUAL_ROWS] = parseInt(
             nodeMatches[MatchSlotsNode.ActualRows1] ||
               nodeMatches[MatchSlotsNode.ActualRows2],
+            0
+          )
+          newNode[NodeProp.ACTUAL_BATCHES] = parseInt(
+            nodeMatches[MatchSlotsNode.ActualBatches1] ||
+              nodeMatches[MatchSlotsNode.ActualBatches2],
+            0
+          )
+          newNode[NodeProp.ACTUAL_RPB] = parseInt(
+            nodeMatches[MatchSlotsNode.ActualRPB1] ||
+              nodeMatches[MatchSlotsNode.ActualRPB2],
             0
           )
           newNode[NodeProp.ACTUAL_LOOPS] = parseInt(

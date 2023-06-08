@@ -74,6 +74,8 @@ export class Node {
   ["Settings"]?: Settings;
   [NodeProp.ACTUAL_LOOPS]: number;
   [NodeProp.ACTUAL_ROWS]: number;
+  [NodeProp.ACTUAL_BATCHES]: number;
+  [NodeProp.ACTUAL_RPB]: number;
   [NodeProp.ACTUAL_ROWS_REVISED]: number;
   [NodeProp.ACTUAL_STARTUP_TIME]?: number;
   [NodeProp.ACTUAL_TOTAL_TIME]: number;

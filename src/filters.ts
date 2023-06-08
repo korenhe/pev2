@@ -59,6 +59,20 @@ export function rows(value: number): string {
   return value.toLocaleString()
 }
 
+export function batches(value: number): string {
+  if (value === undefined) {
+    return "N/A"
+  }
+  return value.toLocaleString()
+}
+
+export function rpb(value: number): string {
+  if (value === undefined) {
+    return "N/A"
+  }
+  return value.toLocaleString()
+}
+
 export function loops(value: number): string {
   if (value === undefined) {
     return "N/A"
@@ -176,6 +190,10 @@ export function formatNodeProp(key: string, value: unknown): string {
       return cost(value as number)
     } else if (nodePropTypes[key] === PropType.rows) {
       return rows(value as number)
+    } else if (nodePropTypes[key] === PropType.batches) {
+      return batches(value as number)
+    } else if (nodePropTypes[key] === PropType.rpb) {
+      return rpb(value as number)
     } else if (nodePropTypes[key] === PropType.loops) {
       return loops(value as number)
     } else if (nodePropTypes[key] === PropType.factor) {

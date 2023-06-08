@@ -48,6 +48,8 @@ export enum NodeProp {
   // plan property keys
   NODE_TYPE = "Node Type",
   ACTUAL_ROWS = "Actual Rows",
+  ACTUAL_BATCHES = "Actual Batches",
+  ACTUAL_RPB = "Actual R/B",
   PLAN_ROWS = "Plan Rows",
   PLAN_WIDTH = "Plan Width",
   ROWS_REMOVED_BY_FILTER = "Rows Removed by Filter",
@@ -149,6 +151,8 @@ export enum PropType {
   list,
   loops,
   rows,
+  batches,
+  rpb,
   sortGroups,
   transferRate,
 }
@@ -157,6 +161,8 @@ export const nodePropTypes: { [key: string]: PropType } = {}
 
 nodePropTypes[NodeProp.ACTUAL_ROWS] = PropType.rows
 nodePropTypes[NodeProp.ACTUAL_LOOPS] = PropType.loops
+nodePropTypes[NodeProp.ACTUAL_BATCHES] = PropType.batches
+nodePropTypes[NodeProp.ACTUAL_RPB] = PropType.rpb
 nodePropTypes[NodeProp.PLAN_ROWS] = PropType.rows
 nodePropTypes[NodeProp.PLAN_WIDTH] = PropType.bytes
 nodePropTypes[NodeProp.ACTUAL_ROWS_REVISED] = PropType.rows

@@ -68,6 +68,8 @@ const notMiscProperties: string[] = [
   NodeProp.PLAN_ROWS,
   NodeProp.ACTUAL_ROWS,
   NodeProp.ACTUAL_LOOPS,
+  NodeProp.ACTUAL_BATCHES,
+  NodeProp.ACTUAL_RPB,
   NodeProp.OUTPUT,
   NodeProp.WORKERS,
   NodeProp.WORKERS_PLANNED,
@@ -383,6 +385,24 @@ watch(activeTab, () => {
         ></font-awesome-icon>
         <b>Loops:</b>
         <span class="px-1">{{ formattedProp("ACTUAL_LOOPS") }} </span>
+      </div>
+      <div v-if="node[NodeProp.ACTUAL_BATCHES] > 1">
+        <font-awesome-icon
+          fixed-width
+          icon="align-justify"
+          class="text-muted"
+        ></font-awesome-icon>
+        <b>Batches:</b>
+        <span class="px-1">{{ formattedProp("ACTUAL_BATCHES") }} </span>
+      </div>
+      <div v-if="node[NodeProp.ACTUAL_RPB] > 1">
+        <font-awesome-icon
+          fixed-width
+          icon="caret-right"
+          class="text-muted"
+        ></font-awesome-icon>
+        <b>R/B:</b>
+        <span class="px-1">{{ formattedProp("ACTUAL_RPB") }} </span>
       </div>
       <!-- general tab -->
     </div>
