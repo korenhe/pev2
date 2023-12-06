@@ -525,7 +525,7 @@ export class PlanService {
       const closeParenthesisRegex = "\\)"
       // tslint:disable-next-line:max-line-length
       const actualRegex =
-        "(?:actual(?:\\stime=(\\d+\\.\\d+)\\.\\.(\\d+\\.\\d+))?\\srows=(\\d+)(?:\\sbatches=(\\d+)\\srpb=(\\d+))?\\sloops=(\\d+)|(never\\s+executed))"
+        "(?:actual(?:\\stime=(\\d+\\.\\d+)\\.\\.(\\d+\\.\\d+))?\\srows=(\\d+)(?:\\sbatches=(\\d+)\\srpb=(\\d+|nan))?\\sloops=(\\d+)|(never\\s+executed))"
       const optionalGroup = "?"
 
       const emptyLineMatches = new RegExp(emptyLineRegex).exec(line)
